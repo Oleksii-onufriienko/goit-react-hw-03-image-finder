@@ -4,44 +4,52 @@ import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { ImageGalleryItem } from "./ImageGalleryItem/ImageGalleryItem";
 import { Button } from "./Button/Button";
+import { Modal } from "./Modal/Modal";
 
 export class App extends Component {
   state = {
     imgSearch: '',
     imgArray: [],
     page: 1,
+    modalShow: -1,
   }
 
-  handleSubmit = ({ imgSearch },{resetForm} ) => {
+  handleSubmit = ({ imgSearch }) => {
 
     this.setState({imgSearch });
     
-    // console.log(this.state);
-    this.getImg(imgSearch,1).then(result => {
+    this.getImg(imgSearch, 1).then(result => {
       this.setState({ imgArray: [...result.data.hits], page: 1, imgSearch });
     }).catch(e => { 
        this.setState({ imgArray: [], page: 1, imgSearch: ''});
     });
-    // resetForm();
   }
 
   handleLoadMore = () => {
-    const { imgSearch } = this.state;
+    const { imgSearch, page } = this.state;
 
-    this.getImg(imgSearch,2).then(result => {
-      this.setState({ imgArray: [...result.data.hits], page: 2, imgSearch });
+    this.getImg(imgSearch,page+1).then(result => {
+      this.setState(prevState => (
+        { imgArray: [...prevState.imgArray,...result.data.hits], page: prevState.page +1 }
+      ));
       }).catch(e => { 
           this.setState({ imgArray: [], page: 1, imgSearch: ''});
       });
-    
-    // this.setState(prevState => {
-    //   return {
-    //     page: prevState.page + 1,
+  }
 
-    //   }
+  handleModal = (e) => {
 
-    // });
-    console.log("Load more");
+    this.setState({ modalShow:  Number(e.target.dataset.index)});
+  }
+
+  handleCloseModal = () => {
+    this.setState({modalShow: -1})
+  }
+
+  handleBackDropClick = (e) => {
+    if (e.currentTarget === e.target) {
+      this.handleCloseModal();
+    }
   }
 
   async getImg(imgSearch, page) {
@@ -49,7 +57,6 @@ export class App extends Component {
      return axios
       .get(query)
        .then(result => {
-         console.log(result);
         if (result.data.hits.length === 0) return {};
         return result;
       })
@@ -59,21 +66,28 @@ export class App extends Component {
   }
 
   render() {
+    const { imgArray, modalShow } = this.state;
     return (
       <>
         <Searchbar handleSubmit={this.handleSubmit} />
-        {this.state.imgArray.length > 0 &&
+        {imgArray.length > 0 &&
           <ImageGallery>
-            {this.state.imgArray.map(e => {
+            {imgArray.map((e, i)=> {
               return (
-                <ImageGalleryItem key={e.id} src={e.webformatURL} alt={e.tags} />
+                <ImageGalleryItem key={e.id} src={e.webformatURL} alt={e.tags} index={i} handleModal={ this.handleModal} />
               );
             })}
           </ImageGallery>
         }
-        {this.state.imgArray.length > 11 &&
+        {imgArray.length > 11 &&
           <Button handleLoadMore={this.handleLoadMore} />
         }
+        {modalShow > -1 &&
+          <Modal src={imgArray[modalShow].largeImageURL}
+            alt={imgArray[modalShow].tags}
+            handleCloseModal={this.handleCloseModal}
+            handleBackDropClick={this.handleBackDropClick}
+          />}
       </>
     );
   }

@@ -21,12 +21,12 @@ const ImageGalleryItemImage = styled.img`
 
 export class ImageGalleryItem extends Component{
     render() {
-    const { src, alt } = this.props;
+    const { src, alt, index } = this.props;
 
     return (
-            <ImgGalleryItem>
-                <ImageGalleryItemImage src={src} alt={alt} />
-            </ImgGalleryItem>
+        <ImgGalleryItem>
+            <ImageGalleryItemImage src={src} alt={alt} data-index={index} onClick={this.props.handleModal} />
+        </ImgGalleryItem>
         );
     }
 }
