@@ -12,7 +12,6 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.8);
-  /* z-index: 1200; */
 `;
 
 const ModalWindow = styled.div`
@@ -37,7 +36,7 @@ export class Modal extends Component{
         
     render() {
         const { src, alt } = this.props;
-        
+
         return createPortal(
             <Overlay onClick={this.props.handleBackDropClick}>
                 <ModalWindow>
